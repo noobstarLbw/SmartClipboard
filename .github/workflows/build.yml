@@ -8,6 +8,9 @@ on:
   pull_request:
     branches: [ main ]
 
+permissions:
+  contents: write
+
 jobs:
   build:
     runs-on: windows-latest
@@ -28,6 +31,8 @@ jobs:
           pip install -r requirements.txt
 
       - name: Run unit tests
+        env:
+          CI: "true"
         run: |
           python -m unittest discover -s tests -p "test_*.py" -v
 
@@ -37,15 +42,7 @@ jobs:
 
       - name: Compile standalone executable
         run: |
-          pyinstaller --clean `
-            --name "SmartClipboard" `
-            --onefile `
-            --windowed `
-            --icon "app_icon.ico" `
-            --hidden-import "PIL.BmpImagePlugin" `
-            --hidden-import "PIL.PngImagePlugin" `
-            --hidden-import "pystray._win32" `
-            main.py
+          python -m PyInstaller --clean --name "SmartClipboard" --onefile --windowed --icon "app_icon.ico" --hidden-import "PIL.BmpImagePlugin" --hidden-import "PIL.PngImagePlugin" --hidden-import "pystray._win32" main.py
 
       - name: Upload executable artifact
         uses: actions/upload-artifact@v4

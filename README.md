@@ -36,19 +36,19 @@
 
 ```mermaid
 flowchart TD
-    subgraph OS [Windows 操作系统]
-        UserAction[用户复制 / 按键动作]
-        WinClip[Windows 原生剪贴板]
-        TargetApp[前台目标输入窗口]
+    subgraph OS ["Windows 操作系统"]
+        UserAction["用户复制 / 按键动作"]
+        WinClip["Windows 原生剪贴板"]
+        TargetApp["前台目标输入窗口"]
     end
 
-    subgraph Core [SmartClipboard 核心驱动]
-        Listener[事件监听器 (AddClipboardFormatListener)]
-        Hook[低级键盘钩子 (WH_KEYBOARD_LL)]
-        Storage[双队列存储 (文字/图片各 10 条)]
-        UI[桌面右键级浮动窗 (Fluent Context UI)]
-        Synthesizer[粘贴合成器 (keybd_event + Magic)]
-        Tray[系统托盘 & 开机自启]
+    subgraph Core ["SmartClipboard 核心驱动"]
+        Listener["事件监听器 (AddClipboardFormatListener)"]
+        Hook["低级键盘钩子 (WH_KEYBOARD_LL)"]
+        Storage["双队列存储 (文字/图片各 10 条)"]
+        UI["桌面右键级浮动窗 (Fluent Context UI)"]
+        Synthesizer["粘贴合成器 (keybd_event + Magic)"]
+        Tray["系统托盘 & 开机自启"]
     end
 
     UserAction -->|复制动作| WinClip
@@ -56,16 +56,16 @@ flowchart TD
     Listener -->|提取并去重| Storage
 
     UserAction -->|手按 Ctrl+V| Hook
-    Hook -->|检查: 自身合成标记?| Check{是否放行?}
-    Check -->|是 (包含魔数 0xCAFEBABE)| Pass[CallNextHookEx 放行]
+    Hook -->|检查自身合成标记| Check{"是否放行?"}
+    Check -->|包含魔数 0xCAFEBABE| Pass["CallNextHookEx 放行"]
     Pass --> TargetApp
 
-    Check -->|否 (用户真实按键)| Block[阻断按键并记录光标与目标句柄]
+    Check -->|用户真实按键| Block["阻断按键并记录光标与目标句柄"]
     Block --> UI
     UI -->|拉取历史列表| Storage
     UI -->|屏幕防出界定位弹出| OS
 
-    UI -->|点击条目 / 按数字 1~9| Synthesizer
+    UI -->|点击条目或按数字 1-9| Synthesizer
     Synthesizer -->|1. 写入内容| WinClip
     Synthesizer -->|2. 激活原前台窗口| TargetApp
     Synthesizer -->|3. 发送带魔数的 Ctrl+V| Hook
