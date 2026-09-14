@@ -1,0 +1,4 @@
+# Smart Clipboard Manager - Core & Build Dependencies
+Pillow>=10.0.0
+pystray>=0.19.5
+pyinstaller>=6.0.0
