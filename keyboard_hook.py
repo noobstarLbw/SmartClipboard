@@ -19,7 +19,10 @@ from config import (
     VK_MENU,
     VK_LWIN,
     VK_RWIN,
+    INTERCEPT_TERMINAL_CTRL_SHIFT_V,
 )
+from paste_synthesizer import is_terminal_window
+
 
 logger = logging.getLogger("SmartClipboard.KeyboardHook")
 
@@ -143,29 +146,40 @@ class KeyboardHook:
             # 检查拦截总开关
             if self._is_enabled:
                 if kbd.vkCode == VK_V:
-                    # 严格判定：Ctrl 必须按下，且 Alt、Win、Shift 未被按下
+                    # 判定控制键状态
                     ctrl_down = self._is_key_pressed(VK_CONTROL)
                     alt_down = self._is_key_pressed(VK_MENU)
                     win_down = self._is_key_pressed(VK_LWIN) or self._is_key_pressed(VK_RWIN)
                     shift_down = self._is_key_pressed(VK_SHIFT)
 
-                    if ctrl_down and not alt_down and not win_down and not shift_down:
-                        # 拦截到真正的用户 Ctrl+V
-                        logger.info("Intercepted genuine user Ctrl+V!")
-                        
-                        # 瞬间抓取前台窗口句柄与当前光标坐标
+                    if ctrl_down and not alt_down and not win_down:
+                        should_intercept = False
                         target_hwnd = user32.GetForegroundWindow()
-                        pt = wintypes.POINT()
-                        user32.GetCursorPos(ctypes.byref(pt))
 
-                        # 触发外部回调通知 UI 线程展示浮动框
-                        try:
-                            self.on_trigger_callback(pt.x, pt.y, target_hwnd)
-                        except Exception as e:
-                            logger.error(f"Error in on_trigger_callback: {e}", exc_info=True)
+                        if not shift_down:
+                            # 1. 常规用户纯 Ctrl + V (所有窗口通用，包括终端与 GUI)
+                            should_intercept = True
+                            logger.info("Intercepted genuine user Ctrl+V!")
+                        elif shift_down and INTERCEPT_TERMINAL_CTRL_SHIFT_V:
+                            # 2. 终端环境专属增强：用户按下 Ctrl + Shift + V 试图在终端中粘贴
+                            if is_terminal_window(target_hwnd):
+                                should_intercept = True
+                                logger.info("Intercepted user Ctrl+Shift+V in terminal window!")
 
-                        # 返回 1: 阻断该按键向下传递到前台应用程序
-                        return 1
+                        if should_intercept:
+                            # 瞬间抓取当前光标坐标
+                            pt = wintypes.POINT()
+                            user32.GetCursorPos(ctypes.byref(pt))
+
+                            # 触发外部回调通知 UI 线程展示浮动框
+                            try:
+                                self.on_trigger_callback(pt.x, pt.y, target_hwnd)
+                            except Exception as e:
+                                logger.error(f"Error in on_trigger_callback: {e}", exc_info=True)
+
+                            # 返回 1: 阻断该按键向下传递到前台应用程序
+                            return 1
+
 
         return user32.CallNextHookEx(self._h_hook, n_code, w_param, l_param)
 

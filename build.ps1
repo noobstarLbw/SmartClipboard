@@ -25,7 +25,7 @@ if ($LASTEXITCODE -ne 0) {
 Write-Host "Unit tests passed!" -ForegroundColor Green
 
 Write-Host "Compiling with PyInstaller..." -ForegroundColor Yellow
-pyinstaller --clean `
+python -m PyInstaller --clean `
     --name "SmartClipboard" `
     --onefile `
     --windowed `

@@ -34,6 +34,16 @@ VK_SHIFT: Final[int] = 0x10
 VK_MENU: Final[int] = 0x12  # Alt key
 VK_LWIN: Final[int] = 0x5B
 VK_RWIN: Final[int] = 0x5C
+VK_INSERT: Final[int] = 0x2D
+
+# 键盘事件标志 (Keyboard Event Flags)
+KEYEVENTF_EXTENDEDKEY: Final[int] = 0x0001
+KEYEVENTF_KEYUP: Final[int] = 0x0002
+
+# 终端环境专属增强配置
+INTERCEPT_TERMINAL_CTRL_SHIFT_V: Final[bool] = True  # 在终端环境下同时拦截 Ctrl+Shift+V 快捷键
+TERMINAL_PASTE_WITH_SHIFT_INSERT: Final[bool] = True  # 针对终端环境合成 Shift+Insert 进行免乱码可靠粘贴
+
 
 # 弹窗 UI 样式配置 (Windows Fluent Context Menu 视觉规范)
 @dataclass(frozen=True)
