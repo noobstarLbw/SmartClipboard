@@ -177,7 +177,5 @@ class TestTerminalPaste(unittest.TestCase):
         self.assertNotIn(VK_INSERT, called_vks)
 
 
-
-
 if __name__ == "__main__":
     unittest.main()

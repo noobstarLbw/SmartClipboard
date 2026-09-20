@@ -30,8 +30,10 @@ python -m PyInstaller --clean `
     --onefile `
     --windowed `
     --icon "app_icon.ico" `
+    --collect-all "pystray" `
     --hidden-import "PIL.BmpImagePlugin" `
     --hidden-import "PIL.PngImagePlugin" `
+    --hidden-import "pystray" `
     --hidden-import "pystray._win32" `
     main.py
 

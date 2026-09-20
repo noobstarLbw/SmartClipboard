@@ -2,6 +2,7 @@
 键盘底层拦截层 (Low-Level Keyboard Hook)
 
 基于 Windows WH_KEYBOARD_LL 低级钩子，精准识别与拦截用户手按的 Ctrl+V。
+并在终端环境下自动支持拦截终端专用的 Ctrl+Shift+V。
 利用 dwExtraInfo 携带的魔数签名放行程序内部合成的按键，实现防自触发与防递归死循环。
 """
 
@@ -22,7 +23,6 @@ from config import (
     INTERCEPT_TERMINAL_CTRL_SHIFT_V,
 )
 from paste_synthesizer import is_terminal_window
-
 
 logger = logging.getLogger("SmartClipboard.KeyboardHook")
 
@@ -179,7 +179,6 @@ class KeyboardHook:
 
                             # 返回 1: 阻断该按键向下传递到前台应用程序
                             return 1
-
 
         return user32.CallNextHookEx(self._h_hook, n_code, w_param, l_param)
 
